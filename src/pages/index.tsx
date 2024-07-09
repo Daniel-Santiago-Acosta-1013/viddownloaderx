@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaDownload } from "react-icons/fa6";
+import { FaSearch, FaDownload } from 'react-icons/fa';
 import styles from '../../styles/Home.module.scss';
 
 const Home = () => {
@@ -73,12 +73,15 @@ const Home = () => {
             <h1>Download videos from <span className={styles.youtube}>youtube</span></h1>
             <p>On Wiltube you can download long videos, shorts and even gigantic playlists in just one click.</p>
             <div className={styles.searchContainer}>
-                <input
-                    type="text"
-                    placeholder="Paste the url of the video, shorts or playlist here"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                />
+                <div className={styles.inputContainer}>
+                    <FaSearch className={styles.searchIcon} />
+                    <input
+                        type="text"
+                        placeholder="Paste the url of the video, shorts or playlist here"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                    />
+                </div>
                 <button onClick={handleSearch}>Search</button>
             </div>
 

@@ -9,11 +9,48 @@
 
     .searchContainer {
         display: flex;
-        flex-direction: row;
         align-items: center;
         justify-content: center;
         width: 100%;
         gap: 10px;
+    }
+
+    .inputContainer {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 520px;
+
+        .searchIcon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        input[type="text"] {
+            padding: 20px 20px 20px 40px;
+            max-width: 550px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #f5f5f5;
+        }
+    }
+
+    button {
+        padding: 20px 40px;
+        background-color: #000;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+
+        &:hover {
+            background-color: #333;
+        }
     }
 
     h1 {
@@ -28,28 +65,6 @@
     p {
         font-size: 1rem;
         margin-bottom: 1rem;
-    }
-
-    input {
-        padding: 20px 20px;
-        max-width: 550px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
-        background-color: #f5f5f5;
-    }
-
-    button {
-        padding: 20px 40px;
-        background-color: #000;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 4px;
-
-        &:hover {
-            background-color: #333;
-        }
     }
 
     .videoDetails {
