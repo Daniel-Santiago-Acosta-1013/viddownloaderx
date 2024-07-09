@@ -22,7 +22,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(400).json({ error: 'Requested quality not available' });
         }
 
-        res.setHeader('Content-Disposition', `attachment; filename="${info.videoDetails.title}.mp4"`);
+        const filename = `${info.videoDetails.title}-${quality}.mp4`;
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('X-Filename', filename);
         ytdl(url, { format: format }).pipe(res);
     } catch (error) {
         res.status(500).json({ error: `Failed to download video: ${error.message}` });

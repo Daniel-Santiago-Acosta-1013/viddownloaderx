@@ -26,6 +26,8 @@ const Home = () => {
             return alert('Failed to download video');
         }
 
+        const filename = response.headers.get('X-Filename') || 'video.mp4';
+
         const reader = response.body?.getReader();
         const contentLength = response.headers.get('Content-Length');
         const totalLength = contentLength ? parseInt(contentLength, 10) : 0;
@@ -44,7 +46,7 @@ const Home = () => {
         const downloadUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = downloadUrl;
-        link.setAttribute('download', 'video.mp4');
+        link.setAttribute('download', filename);
         document.body.appendChild(link);
         link.click();
         link.parentNode.removeChild(link);
