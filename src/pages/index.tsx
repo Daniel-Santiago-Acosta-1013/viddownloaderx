@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FaSearch, FaDownload } from 'react-icons/fa';
 import Head from 'next/head';
+import Swal from 'sweetalert2';
 import styles from '../../styles/Home.module.scss';
 
 const Home = () => {
@@ -12,19 +13,35 @@ const Home = () => {
     const [videoInfo, setVideoInfo] = useState<any>(null);
 
     const handleSearch = async () => {
-        if (!url) return alert('Please enter a YouTube URL');
+        if (!url) {
+            return Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please enter a YouTube URL',
+            });
+        }
 
         // Fetch video info from API
         const response = await fetch(`/api/videoInfo?url=${encodeURIComponent(url)}`);
         const data = await response.json();
         if (data.error) {
-            return alert(data.error);
+            return Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.error,
+            });
         }
         setVideoInfo(data);
     };
 
     const handleDownload = async () => {
-        if (!url) return alert('Please enter a YouTube URL');
+        if (!url) {
+            return Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please enter a YouTube URL',
+            });
+        }
 
         setIsDownloading(true);
         setProgress(0);
@@ -38,7 +55,12 @@ const Home = () => {
 
         if (!response.ok) {
             setIsDownloading(false);
-            return alert('Failed to download video');
+            const errorData = await response.json();
+            return Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorData.error || 'Failed to download video',
+            });
         }
 
         const filename = response.headers.get('X-Filename') || (format === 'audio' ? 'audio.mp3' : 'video.mp4');
