@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styles from '../../styles/Home.module.scss';
-import ProgressButton from '../components/ProgressButton/ProgressButton';
+import { TextField, MenuItem, Select, InputLabel, FormControl, Button, Box, Typography, Container, LinearProgress } from '@mui/material';
 
 const Home = () => {
     const [url, setUrl] = useState('');
@@ -56,33 +56,58 @@ const Home = () => {
     };
 
     return (
-        <div className={styles.container}>
-            <h1>Download YouTube Video</h1>
-            <input
-                type="text"
-                placeholder="Enter YouTube URL"
+        <Container maxWidth="sm" className={styles.container}>
+            <Typography variant="h4" gutterBottom >
+                Download YouTube Video
+            </Typography>
+            
+            <TextField
+                label="Enter YouTube URL"
+                variant="outlined"
+                fullWidth
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
+                margin="normal"
+                
             />
-            <div className={styles.inputsContainer}>
-                <select value={quality} onChange={(e) => setQuality(e.target.value)}>
-                    <option value="highest">Highest</option>
-                    <option value="1080p">1080p</option>
-                    <option value="720p">720p</option>
-                    <option value="480p">480p</option>
-                    <option value="360p">360p</option>
-                </select>
-                <select value={format} onChange={(e) => setFormat(e.target.value)}>
-                    <option value="video">Video</option>
-                    <option value="audio">Audio (MP3)</option>
-                </select>
-            </div>
-            <ProgressButton
-                progress={progress}
-                isDownloading={isDownloading}
-                onClick={handleDownload}
-            />
-        </div>
+            <Box className={styles.inputsContainer}>
+                <FormControl fullWidth margin="normal">
+                    <InputLabel>Quality</InputLabel>
+                    <Select
+                        value={quality}
+                        onChange={(e) => setQuality(e.target.value)}
+                        label="Quality"
+                    >
+                        <MenuItem value="highest">Highest</MenuItem>
+                        <MenuItem value="1080p">1080p</MenuItem>
+                        <MenuItem value="720p">720p</MenuItem>
+                        <MenuItem value="480p">480p</MenuItem>
+                        <MenuItem value="360p">360p</MenuItem>
+                    </Select>
+                </FormControl>
+                <FormControl fullWidth margin="normal">
+                    <InputLabel>Format</InputLabel>
+                    <Select
+                        value={format}
+                        onChange={(e) => setFormat(e.target.value)}
+                        label="Format"
+                    >
+                        <MenuItem value="video">Video</MenuItem>
+                        <MenuItem value="audio">Audio (MP3)</MenuItem>
+                    </Select>
+                </FormControl>
+            </Box>
+            <Box margin="normal" display="flex" justifyContent="center">
+                <Button variant="contained" color="primary" onClick={handleDownload} disabled={isDownloading}>
+                    {isDownloading ? 'Downloading...' : 'Download'}
+                </Button>
+            </Box>
+            {isDownloading && (
+                <Box width="100%" marginTop="16px">
+                    <LinearProgress variant="determinate" value={progress} />
+                </Box>
+            )}
+        </Container>
     );
 };
 
