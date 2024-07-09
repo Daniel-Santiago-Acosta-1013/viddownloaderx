@@ -5,6 +5,7 @@ import ProgressButton from '../components/ProgressButton/ProgressButton';
 const Home = () => {
     const [url, setUrl] = useState('');
     const [quality, setQuality] = useState('highest');
+    const [format, setFormat] = useState('video');
     const [progress, setProgress] = useState(0);
     const [isDownloading, setIsDownloading] = useState(false);
 
@@ -14,7 +15,7 @@ const Home = () => {
         setIsDownloading(true);
         setProgress(0);
 
-        const response = await fetch(`/api/download?url=${encodeURIComponent(url)}&quality=${quality}`, {
+        const response = await fetch(`/api/download?url=${encodeURIComponent(url)}&quality=${quality}&format=${format}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -26,7 +27,7 @@ const Home = () => {
             return alert('Failed to download video');
         }
 
-        const filename = response.headers.get('X-Filename') || 'video.mp4';
+        const filename = response.headers.get('X-Filename') || (format === 'audio' ? 'audio.mp3' : 'video.mp4');
 
         const reader = response.body?.getReader();
         const contentLength = response.headers.get('Content-Length');
@@ -57,13 +58,13 @@ const Home = () => {
     return (
         <div className={styles.container}>
             <h1>Download YouTube Video</h1>
+            <input
+                type="text"
+                placeholder="Enter YouTube URL"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+            />
             <div className={styles.inputsContainer}>
-                <input
-                    type="text"
-                    placeholder="Enter YouTube URL"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                />
                 <select value={quality} onChange={(e) => setQuality(e.target.value)}>
                     <option value="highest">Highest</option>
                     <option value="1080p">1080p</option>
@@ -71,11 +72,15 @@ const Home = () => {
                     <option value="480p">480p</option>
                     <option value="360p">360p</option>
                 </select>
+                <select value={format} onChange={(e) => setFormat(e.target.value)}>
+                    <option value="video">Video</option>
+                    <option value="audio">Audio (MP3)</option>
+                </select>
             </div>
-            <ProgressButton 
-                progress={progress} 
-                isDownloading={isDownloading} 
-                onClick={handleDownload} 
+            <ProgressButton
+                progress={progress}
+                isDownloading={isDownloading}
+                onClick={handleDownload}
             />
         </div>
     );
