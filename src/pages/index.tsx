@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaDownload } from "react-icons/fa6";
 import styles from '../../styles/Home.module.scss';
 
 const Home = () => {
@@ -106,7 +107,7 @@ const Home = () => {
                             </select>
                         </div>
                         <button onClick={handleDownload} disabled={isDownloading} className={styles.downloadButton}>
-                            {isDownloading ? 'Downloading...' : 'Download'}
+                            {isDownloading ? 'Downloading...' : 'Download'} <FaDownload />
                         </button>
                     </div>
                 </div>
