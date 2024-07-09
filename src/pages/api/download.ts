@@ -19,6 +19,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.setHeader('Content-Disposition', `attachment; filename="${info.videoDetails.title}.mp4"`);
         ytdl(url, { format: format }).pipe(res);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to download video' });
+        res.status(500).json({ error: `Failed to download video: ${error}` });
     }
 }
