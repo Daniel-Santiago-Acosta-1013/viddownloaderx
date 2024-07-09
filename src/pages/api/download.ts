@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import ytdl from 'ytdl-core';
 import ffmpeg from 'fluent-ffmpeg';
+import ffmpegPath from 'ffmpeg-static';
 import { Readable } from 'stream';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -31,6 +32,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const filename = format === 'audio' ? `${info.videoDetails.title}.mp3` : `${info.videoDetails.title}-${quality}.mp4`;
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.setHeader('X-Filename', filename);
+
+        // Configura ffmpeg para usar la versión estática
+        ffmpeg.setFfmpegPath(ffmpegPath);
 
         if (format === 'audio') {
             const audioStream = ytdl(url, { format: chosenFormat });
