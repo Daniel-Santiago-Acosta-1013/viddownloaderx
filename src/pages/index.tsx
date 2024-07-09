@@ -109,9 +109,13 @@ const Home = () => {
                                 <option value="audio">Audio (MP3)</option>
                             </select>
                         </div>
-                        <button onClick={handleDownload} disabled={isDownloading} className={styles.downloadButton}>
-                            {isDownloading ? 'Downloading...' : 'Download'} <FaDownload />
-                        </button>
+
+                        <div className={styles.downloadContainer}>
+                            <p className={styles.fileSize}>Total: {videoInfo.fileSize}</p>
+                            <button onClick={handleDownload} disabled={isDownloading} className={styles.downloadButton}>
+                                {isDownloading ? 'Downloading...' : 'Download'} <FaDownload />
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

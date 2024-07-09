@@ -13,7 +13,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const thumbnail = info.videoDetails.thumbnails[0].url;
         const title = info.videoDetails.title;
 
-        res.status(200).json({ thumbnail, title });
+        // Estimate file size for different formats and qualities
+        const format = ytdl.chooseFormat(info.formats, { quality: 'highest' });
+        const fileSize = format.contentLength ? (parseInt(format.contentLength) / (1024 * 1024)).toFixed(2) + ' MB' : 'Unknown';
+
+        res.status(200).json({ thumbnail, title, fileSize });
     } catch (error) {
         res.status(500).json({ error: `Failed to fetch video info: ${error.message}` });
     }

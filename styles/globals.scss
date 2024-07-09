@@ -1,5 +1,20 @@
+/* Importing the DM Sans fonts */
+@font-face {
+    font-family: 'DMSans';
+    src: url('/fonts/DMSans-VariableFont_opsz,wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'DMSansItalic';
+    src: url('/fonts/DMSans-Italic-VariableFont_opsz,wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'DMSans', Arial, sans-serif;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
