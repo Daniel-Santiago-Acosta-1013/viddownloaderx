@@ -71,13 +71,15 @@ const Home = () => {
         <div className={styles.container}>
             <h1>Download videos from <span className={styles.youtube}>youtube</span></h1>
             <p>On Wiltube you can download long videos, shorts and even gigantic playlists in just one click.</p>
-            <input
-                type="text"
-                placeholder="Paste the url of the video, shorts or playlist here"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-            />
-            <button onClick={handleSearch}>Search</button>
+            <div className={styles.searchContainer}>
+                <input
+                    type="text"
+                    placeholder="Paste the url of the video, shorts or playlist here"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                />
+                <button onClick={handleSearch}>Search</button>
+            </div>
 
             {videoInfo && (
                 <div className={styles.videoDetails}>

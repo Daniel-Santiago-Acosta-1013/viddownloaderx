@@ -7,6 +7,15 @@
     padding: 2rem;
     background-color: #fff;
 
+    .searchContainer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        gap: 10px;
+    }
+
     h1 {
         font-size: 2rem;
         margin-bottom: 1rem;
@@ -22,16 +31,15 @@
     }
 
     input {
-        padding: 0.5rem;
-        margin-bottom: 1rem;
-        width: 100%;
-        max-width: 500px;
+        padding: 20px 20px;
+        max-width: 550px;
         border: 1px solid #ccc;
         border-radius: 4px;
+        font-size: 14px;
     }
 
     button {
-        padding: 0.5rem 1rem;
+        padding: 20px 40px;
         background-color: #000;
         color: white;
         border: none;
