@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import styles from '../../styles/Home.module.scss';
-import { TextField, MenuItem, Select, InputLabel, FormControl, Button, Box, Typography, Container, LinearProgress } from '@mui/material';
 
 const Home = () => {
     const [url, setUrl] = useState('');
@@ -8,6 +7,19 @@ const Home = () => {
     const [format, setFormat] = useState('video');
     const [progress, setProgress] = useState(0);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [videoInfo, setVideoInfo] = useState<any>(null);
+
+    const handleSearch = async () => {
+        if (!url) return alert('Please enter a YouTube URL');
+
+        // Fetch video info from API
+        const response = await fetch(`/api/videoInfo?url=${encodeURIComponent(url)}`);
+        const data = await response.json();
+        if (data.error) {
+            return alert(data.error);
+        }
+        setVideoInfo(data);
+    };
 
     const handleDownload = async () => {
         if (!url) return alert('Please enter a YouTube URL');
@@ -56,58 +68,50 @@ const Home = () => {
     };
 
     return (
-        <Container maxWidth="sm" className={styles.container}>
-            <Typography variant="h4" gutterBottom >
-                Download YouTube Video
-            </Typography>
-            
-            <TextField
-                label="Enter YouTube URL"
-                variant="outlined"
-                fullWidth
+        <div className={styles.container}>
+            <h1>Download videos from <span className={styles.youtube}>youtube</span></h1>
+            <p>On Wiltube you can download long videos, shorts and even gigantic playlists in just one click.</p>
+            <input
+                type="text"
+                placeholder="Paste the url of the video, shorts or playlist here"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                margin="normal"
-                
             />
-            <Box className={styles.inputsContainer}>
-                <FormControl fullWidth margin="normal">
-                    <InputLabel>Quality</InputLabel>
-                    <Select
-                        value={quality}
-                        onChange={(e) => setQuality(e.target.value)}
-                        label="Quality"
-                    >
-                        <MenuItem value="highest">Highest</MenuItem>
-                        <MenuItem value="1080p">1080p</MenuItem>
-                        <MenuItem value="720p">720p</MenuItem>
-                        <MenuItem value="480p">480p</MenuItem>
-                        <MenuItem value="360p">360p</MenuItem>
-                    </Select>
-                </FormControl>
-                <FormControl fullWidth margin="normal">
-                    <InputLabel>Format</InputLabel>
-                    <Select
-                        value={format}
-                        onChange={(e) => setFormat(e.target.value)}
-                        label="Format"
-                    >
-                        <MenuItem value="video">Video</MenuItem>
-                        <MenuItem value="audio">Audio (MP3)</MenuItem>
-                    </Select>
-                </FormControl>
-            </Box>
-            <Box margin="normal" display="flex" justifyContent="center">
-                <Button variant="contained" color="primary" onClick={handleDownload} disabled={isDownloading}>
-                    {isDownloading ? 'Downloading...' : 'Download'}
-                </Button>
-            </Box>
-            {isDownloading && (
-                <Box width="100%" marginTop="16px">
-                    <LinearProgress variant="determinate" value={progress} />
-                </Box>
+            <button onClick={handleSearch}>Search</button>
+
+            {videoInfo && (
+                <div className={styles.videoDetails}>
+                    <img src={videoInfo.thumbnail} alt={videoInfo.title} />
+                    <p>{videoInfo.title}</p>
+                    <div>
+                        <label>Resolution</label>
+                        <select value={quality} onChange={(e) => setQuality(e.target.value)}>
+                            <option value="highest">Highest</option>
+                            <option value="1080p">1080p</option>
+                            <option value="720p">720p</option>
+                            <option value="480p">480p</option>
+                            <option value="360p">360p</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Format</label>
+                        <select value={format} onChange={(e) => setFormat(e.target.value)}>
+                            <option value="video">Video</option>
+                            <option value="audio">Audio (MP3)</option>
+                        </select>
+                    </div>
+                    <button onClick={handleDownload} disabled={isDownloading}>
+                        {isDownloading ? 'Downloading...' : 'Download'}
+                    </button>
+                </div>
             )}
-        </Container>
+
+            {isDownloading && (
+                <div>
+                    <progress value={progress} max="100" />
+                </div>
+            )}
+        </div>
     );
 };
 
