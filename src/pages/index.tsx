@@ -83,28 +83,32 @@ const Home = () => {
 
             {videoInfo && (
                 <div className={styles.videoDetails}>
-                    <img src={videoInfo.thumbnail} alt={videoInfo.title} />
-                    <p>{videoInfo.title}</p>
-                    <div>
-                        <label>Resolution</label>
-                        <select value={quality} onChange={(e) => setQuality(e.target.value)}>
-                            <option value="highest">Highest</option>
-                            <option value="1080p">1080p</option>
-                            <option value="720p">720p</option>
-                            <option value="480p">480p</option>
-                            <option value="360p">360p</option>
-                        </select>
+                    <div className={styles.imgAndTitle}>
+                        <img src={videoInfo.thumbnail} alt={videoInfo.title} />
+                        <p>{videoInfo.title}</p>
                     </div>
                     <div>
-                        <label>Format</label>
-                        <select value={format} onChange={(e) => setFormat(e.target.value)}>
-                            <option value="video">Video</option>
-                            <option value="audio">Audio (MP3)</option>
-                        </select>
+                        <div className={styles.optionsContainer}>
+                            <label>Resolution</label>
+                            <select value={quality} onChange={(e) => setQuality(e.target.value)}>
+                                <option value="highest">Highest</option>
+                                <option value="1080p">1080p</option>
+                                <option value="720p">720p</option>
+                                <option value="480p">480p</option>
+                                <option value="360p">360p</option>
+                            </select>
+                        </div>
+                        <div className={styles.optionsContainer}>
+                            <label>Format</label>
+                            <select value={format} onChange={(e) => setFormat(e.target.value)}>
+                                <option value="video">Video</option>
+                                <option value="audio">Audio (MP3)</option>
+                            </select>
+                        </div>
+                        <button onClick={handleDownload} disabled={isDownloading} className={styles.downloadButton}>
+                            {isDownloading ? 'Downloading...' : 'Download'}
+                        </button>
                     </div>
-                    <button onClick={handleDownload} disabled={isDownloading}>
-                        {isDownloading ? 'Downloading...' : 'Download'}
-                    </button>
                 </div>
             )}
 

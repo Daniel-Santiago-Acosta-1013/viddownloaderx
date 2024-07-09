@@ -52,20 +52,52 @@
     }
 
     .videoDetails {
+        width: 100%;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
+        justify-content: center;
         margin-top: 1rem;
+        gap: 80px;
+
+        .imgAndTitle {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .optionsContainer {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
 
         img {
-            max-width: 100%;
+            width: 400px;
             height: auto;
             margin-bottom: 1rem;
+            border-radius: 10px;
         }
 
         p {
             font-size: 1rem;
-            margin-bottom: 1rem;
+            font-weight: bold;
+            color: #404040;
+        }
+
+        .downloadButton {
+            padding: 20px 40px;
+            background-color: #EC2422;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+
+            &:hover {
+                background-color: #333;
+            }
         }
 
         div {
@@ -79,7 +111,8 @@
             }
 
             select {
-                padding: 0.5rem;
+                width: 100%;
+                padding: 15px 10px;
                 border: 1px solid #ccc;
                 border-radius: 4px;
             }
