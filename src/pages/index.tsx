@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FaSearch, FaDownload } from 'react-icons/fa';
+import Head from 'next/head';
 import styles from '../../styles/Home.module.scss';
 
 const Home = () => {
@@ -70,6 +71,9 @@ const Home = () => {
 
     return (
         <div className={styles.container}>
+            <Head>
+                <title>Descargar Videos</title>
+            </Head>
             <h1>Download videos from <span className={styles.youtube}>youtube</span></h1>
             <p>On Wiltube you can download long videos, shorts and even gigantic playlists in just one click.</p>
             <div className={styles.searchContainer}>
@@ -109,13 +113,10 @@ const Home = () => {
                                 <option value="audio">Audio (MP3)</option>
                             </select>
                         </div>
-
-                        <div className={styles.downloadContainer}>
-                            <p className={styles.fileSize}>Total: {videoInfo.fileSize}</p>
-                            <button onClick={handleDownload} disabled={isDownloading} className={styles.downloadButton}>
-                                {isDownloading ? 'Downloading...' : 'Download'} <FaDownload />
-                            </button>
-                        </div>
+                        <p>Total: {videoInfo.fileSize}</p>
+                        <button onClick={handleDownload} disabled={isDownloading} className={styles.downloadButton}>
+                            {isDownloading ? 'Downloading...' : 'Download'} <FaDownload />
+                        </button>
                     </div>
                 </div>
             )}
