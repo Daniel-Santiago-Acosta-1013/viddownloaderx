@@ -95,7 +95,7 @@ const Home = () => {
                         <img src={videoInfo.thumbnail} alt={videoInfo.title} />
                         <p>{videoInfo.title}</p>
                     </div>
-                    <div>
+                    <div className={styles.mainOptionsContainer}>
                         <div className={styles.optionsContainer}>
                             <label>Resolution</label>
                             <select value={quality} onChange={(e) => setQuality(e.target.value)}>
