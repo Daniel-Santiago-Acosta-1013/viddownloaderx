@@ -11,14 +11,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         const info = await ytdl.getInfo(url);
         let format;
+
         if (quality === 'highest') {
-            format = ytdl.chooseFormat(info.formats, { quality: 'highest', filter: 'audioandvideo' });
+            format = ytdl.chooseFormat(info.formats, { quality: 'highestvideo' });
         } else {
-            format = ytdl.chooseFormat(info.formats, { quality: quality as string, filter: 'audioandvideo' });
+            format = info.formats.find(f => f.qualityLabel === quality && f.hasVideo && f.hasAudio);
         }
+
+        if (!format) {
+            return res.status(400).json({ error: 'Requested quality not available' });
+        }
+
         res.setHeader('Content-Disposition', `attachment; filename="${info.videoDetails.title}.mp4"`);
         ytdl(url, { format: format }).pipe(res);
     } catch (error) {
-        res.status(500).json({ error: `Failed to download video: ${error}` });
+        res.status(500).json({ error: `Failed to download video: ${error.message}` });
     }
 }
