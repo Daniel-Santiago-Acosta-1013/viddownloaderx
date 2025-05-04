@@ -81,7 +81,27 @@ const Home = () => {
         setProgress(0);
 
         try {
-            const response = await fetch(`/api/download?url=${encodeURIComponent(url)}&quality=${quality}&format=${format}`, {
+            // Obtener el formatId correspondiente a la calidad seleccionada
+            let selectedFormatId = null;
+            if (videoInfo?.formats) {
+                if (format === 'audio' && videoInfo.formats.audio) {
+                    selectedFormatId = videoInfo.formats.audio.formatId;
+                } else if (quality === 'highest' && videoInfo.formats.highest) {
+                    selectedFormatId = videoInfo.formats.highest.formatId;
+                } else if (videoInfo.formats[quality]) {
+                    selectedFormatId = videoInfo.formats[quality].formatId;
+                }
+            }
+
+            // Construir URL con parámetros para la descarga
+            let downloadUrl = `/api/download?url=${encodeURIComponent(url)}&quality=${quality}&format=${format}`;
+            
+            // Añadir el formatId si está disponible (mejora la precisión de la descarga)
+            if (selectedFormatId) {
+                downloadUrl += `&formatId=${selectedFormatId}`;
+            }
+
+            const response = await fetch(downloadUrl, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -117,9 +137,9 @@ const Home = () => {
             }
 
             const blob = new Blob(chunks);
-            const downloadUrl = window.URL.createObjectURL(blob);
+            const downloadUrl2 = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.href = downloadUrl;
+            link.href = downloadUrl2;
             link.setAttribute('download', filename);
             document.body.appendChild(link);
             link.click();
