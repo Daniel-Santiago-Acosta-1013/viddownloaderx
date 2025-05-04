@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { FaSearch, FaDownload } from 'react-icons/fa';
 import Head from 'next/head';
 import Swal from 'sweetalert2';
 import styles from '../../styles/Home.module.scss';
+import { useTheme } from '../context/ThemeContext';
+import Icon from '../components/Icon';
 
 const Home = () => {
     const [url, setUrl] = useState('');
@@ -11,6 +12,7 @@ const Home = () => {
     const [progress, setProgress] = useState(0);
     const [isDownloading, setIsDownloading] = useState(false);
     const [videoInfo, setVideoInfo] = useState<any>(null);
+    const { theme, toggleTheme } = useTheme();
 
     const handleSearch = async () => {
         if (!url) {
@@ -18,20 +20,50 @@ const Home = () => {
                 icon: 'error',
                 title: 'Error',
                 text: 'Please enter a YouTube URL',
+                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+                color: theme === 'dark' ? '#e0e0e0' : '#333333',
             });
         }
 
-        // Fetch video info from API
-        const response = await fetch(`/api/videoInfo?url=${encodeURIComponent(url)}`);
-        const data = await response.json();
-        if (data.error) {
-            return Swal.fire({
+        try {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Buscando información...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+                color: theme === 'dark' ? '#e0e0e0' : '#333333',
+            });
+
+            // Fetch video info from API
+            const response = await fetch(`/api/videoInfo?url=${encodeURIComponent(url)}`);
+            const data = await response.json();
+            
+            // Cerrar el loading
+            Swal.close();
+
+            if (data.error) {
+                return Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.error,
+                    background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+                    color: theme === 'dark' ? '#e0e0e0' : '#333333',
+                });
+            }
+            setVideoInfo(data);
+        } catch (error) {
+            Swal.close();
+            Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: data.error,
+                text: 'Hubo un problema al buscar el video. Intenta de nuevo.',
+                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+                color: theme === 'dark' ? '#e0e0e0' : '#333333',
             });
         }
-        setVideoInfo(data);
     };
 
     const handleDownload = async () => {
@@ -40,75 +72,131 @@ const Home = () => {
                 icon: 'error',
                 title: 'Error',
                 text: 'Please enter a YouTube URL',
+                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+                color: theme === 'dark' ? '#e0e0e0' : '#333333',
             });
         }
 
         setIsDownloading(true);
         setProgress(0);
 
-        const response = await fetch(`/api/download?url=${encodeURIComponent(url)}&quality=${quality}&format=${format}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        });
+        try {
+            const response = await fetch(`/api/download?url=${encodeURIComponent(url)}&quality=${quality}&format=${format}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
 
-        if (!response.ok) {
+            if (!response.ok) {
+                setIsDownloading(false);
+                const errorData = await response.json();
+                return Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorData.error || 'Failed to download video',
+                    background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+                    color: theme === 'dark' ? '#e0e0e0' : '#333333',
+                });
+            }
+
+            const filename = response.headers.get('X-Filename') || (format === 'audio' ? 'audio.mp3' : 'video.mp4');
+
+            const reader = response.body?.getReader();
+            const contentLength = response.headers.get('Content-Length');
+            const totalLength = contentLength ? parseInt(contentLength, 10) : 0;
+            let receivedLength = 0;
+            const chunks = [];
+
+            while (true) {
+                const { done, value } = await reader!.read();
+                if (done) break;
+                chunks.push(value);
+                receivedLength += value.length;
+                setProgress(totalLength > 0 ? (receivedLength / totalLength) * 100 : 0);
+            }
+
+            const blob = new Blob(chunks);
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+
+            // Mostrar mensaje de éxito
+            Swal.fire({
+                icon: 'success',
+                title: '¡Descarga Completada!',
+                text: `${filename} se ha descargado con éxito`,
+                timer: 3000,
+                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+                color: theme === 'dark' ? '#e0e0e0' : '#333333',
+            });
+
             setIsDownloading(false);
-            const errorData = await response.json();
-            return Swal.fire({
+        } catch (error) {
+            setIsDownloading(false);
+            Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: errorData.error || 'Failed to download video',
+                text: 'Hubo un problema al descargar el video. Intenta de nuevo.',
+                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+                color: theme === 'dark' ? '#e0e0e0' : '#333333',
             });
         }
+    };
 
-        const filename = response.headers.get('X-Filename') || (format === 'audio' ? 'audio.mp3' : 'video.mp4');
-
-        const reader = response.body?.getReader();
-        const contentLength = response.headers.get('Content-Length');
-        const totalLength = contentLength ? parseInt(contentLength, 10) : 0;
-        let receivedLength = 0;
-        const chunks = [];
-
-        while (true) {
-            const { done, value } = await reader!.read();
-            if (done) break;
-            chunks.push(value);
-            receivedLength += value.length;
-            setProgress(totalLength > 0 ? (receivedLength / totalLength) * 100 : 0);
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
         }
-
-        const blob = new Blob(chunks);
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-
-        setIsDownloading(false);
     };
 
     return (
         <div className={styles.container}>
             <Head>
-                <title>Descargar Videos</title>
+                <title>VidDownloaderX - Descarga Videos</title>
+                <meta name="description" content="Descarga videos, shorts y playlists de YouTube con un solo clic" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <link rel="icon" href="/favicon.ico" />
             </Head>
-            <h1>Download videos from <span className={styles.youtube}>youtube</span></h1>
-            <p>On Wiltube you can download long videos, shorts and even gigantic playlists in just one click.</p>
+            
+            <button 
+                className={styles.themeToggle} 
+                onClick={toggleTheme} 
+                aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            >
+                <div className={`${styles.toggleTrack} ${theme === 'dark' ? styles.darkActive : styles.lightActive}`}>
+                    <div className={styles.toggleIcon}>
+                        <Icon name="SunIcon" solid className={styles.sunIcon} />
+                    </div>
+                    <div className={styles.toggleIcon}>
+                        <Icon name="MoonIcon" solid className={styles.moonIcon} />
+                    </div>
+                    <div className={`${styles.toggleThumb} ${theme === 'dark' ? styles.thumbRight : styles.thumbLeft}`} />
+                </div>
+            </button>
+
+            <h1>Descarga videos de <span className={styles.youtube}>YouTube</span></h1>
+            <p>Con VidDownloaderX puedes descargar videos largos, shorts e incluso playlists gigantes con un solo clic.</p>
+            
             <div className={styles.searchContainer}>
                 <div className={styles.inputContainer}>
-                    <FaSearch className={styles.searchIcon} />
+                    <Icon name="MagnifyingGlassIcon" className={styles.searchIcon} />
                     <input
                         type="text"
-                        placeholder="Paste the url of the video, shorts or playlist here"
+                        placeholder="Pega la URL del video, shorts o playlist aquí"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
+                        onKeyDown={handleKeyDown}
                     />
                 </div>
-                <button onClick={handleSearch}>Search</button>
+                <button onClick={handleSearch} className={styles.searchButton}>
+                    <span>Buscar</span>
+                    <Icon name="MagnifyingGlassIcon" solid className={styles.buttonIcon} />
+                </button>
             </div>
 
             {videoInfo && (
@@ -119,27 +207,47 @@ const Home = () => {
                     </div>
                     <div className={styles.mainOptionsContainer}>
                         <div className={styles.optionsContainer}>
-                            <label>Resolution</label>
-                            <select value={quality} onChange={(e) => setQuality(e.target.value)}>
-                                <option value="highest">Highest</option>
-                                <option value="1080p">1080p</option>
-                                <option value="720p">720p</option>
-                                <option value="480p">480p</option>
-                                <option value="360p">360p</option>
-                            </select>
+                            <label>
+                                <Icon name="AdjustmentsHorizontalIcon" className={styles.optionIcon} />
+                                Resolución
+                            </label>
+                            <div className={styles.selectWrapper}>
+                                <select value={quality} onChange={(e) => setQuality(e.target.value)}>
+                                    <option value="highest">Máxima</option>
+                                    <option value="1080p">1080p</option>
+                                    <option value="720p">720p</option>
+                                    <option value="480p">480p</option>
+                                    <option value="360p">360p</option>
+                                </select>
+                                <Icon name="ChevronDownIcon" className={styles.selectIcon} />
+                            </div>
                         </div>
                         <div className={styles.optionsContainer}>
-                            <label>Format</label>
-                            <select value={format} onChange={(e) => setFormat(e.target.value)}>
-                                <option value="video">Video</option>
-                                <option value="audio">Audio (MP3)</option>
-                            </select>
+                            <label>
+                                <Icon name="FilmIcon" className={styles.optionIcon} />
+                                Formato
+                            </label>
+                            <div className={styles.selectWrapper}>
+                                <select value={format} onChange={(e) => setFormat(e.target.value)}>
+                                    <option value="video">Video</option>
+                                    <option value="audio">Audio (MP3)</option>
+                                </select>
+                                <Icon name="ChevronDownIcon" className={styles.selectIcon} />
+                            </div>
                         </div>
 
                         <div className={styles.downloadContainer}>
-                            <p className={styles.fileSize}>Total: {videoInfo.fileSize}</p>
-                            <button onClick={handleDownload} disabled={isDownloading} className={styles.downloadButton}>
-                                {isDownloading ? 'Downloading...' : 'Download'} <FaDownload />
+                            <p className={styles.fileSize}>
+                                <Icon name="DocumentIcon" className={styles.infoIcon} />
+                                Tamaño estimado: {videoInfo.fileSize}
+                            </p>
+                            <button 
+                                onClick={handleDownload} 
+                                disabled={isDownloading} 
+                                className={styles.downloadButton}
+                            >
+                                <span>{isDownloading ? 'Descargando...' : 'Descargar'}</span>
+                                <Icon name="ArrowDownTrayIcon" solid className={styles.buttonIcon} />
                             </button>
                         </div>
                     </div>
@@ -147,7 +255,11 @@ const Home = () => {
             )}
 
             {isDownloading && (
-                <div>
+                <div className={styles.progressContainer}>
+                    <p>
+                        <Icon name="CloudArrowDownIcon" className={styles.progressIcon} />
+                        Descargando... {Math.round(progress)}%
+                    </p>
                     <progress value={progress} max="100" />
                 </div>
             )}

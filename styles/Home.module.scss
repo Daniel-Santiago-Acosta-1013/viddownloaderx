@@ -5,7 +5,11 @@
     justify-content: center;
     min-height: 100vh;
     padding: 2rem;
-    background-color: #fff;
+    background-color: var(--background-primary);
+    box-shadow: 0 0 20px var(--shadow-color);
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 12px;
 
     .searchContainer {
         display: flex;
@@ -13,6 +17,7 @@
         justify-content: center;
         width: 100%;
         gap: 10px;
+        margin: 20px 0;
     }
 
     .inputContainer {
@@ -20,51 +25,116 @@
         display: flex;
         align-items: center;
         width: 520px;
+        transition: all 0.3s ease;
 
         .searchIcon {
             position: absolute;
             left: 10px;
             top: 50%;
             transform: translateY(-50%);
-            color: #999;
+            color: var(--text-secondary);
+            width: 20px;
+            height: 20px;
+            z-index: 10;
         }
 
         input[type="text"] {
             padding: 20px 20px 20px 40px;
             max-width: 550px;
             width: 100%;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             font-size: 14px;
-            background-color: #f5f5f5;
+            background-color: var(--input-background);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px var(--shadow-color);
+            
+            &:focus {
+                outline: none;
+                border-color: var(--accent-color);
+                box-shadow: 0 0 0 2px rgba(236, 36, 34, 0.3);
+            }
         }
     }
 
     button {
         padding: 20px 40px;
-        background-color: #000;
-        color: white;
+        background-color: var(--button-background);
+        color: var(--button-text);
         border: none;
         cursor: pointer;
-        border-radius: 4px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px var(--shadow-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
 
         &:hover {
-            background-color: #333;
+            background-color: var(--button-hover);
+            transform: translateY(-2px);
+        }
+        
+        &:active {
+            transform: translateY(0);
+        }
+        
+        .buttonIcon {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        &:hover .buttonIcon {
+            transform: scale(1.1);
+        }
+    }
+
+    .searchButton {
+        background-color: var(--button-background);
+        
+        &:hover {
+            background-color: var(--button-hover);
         }
     }
 
     h1 {
-        font-size: 2rem;
+        font-size: 2.5rem;
         margin-bottom: 1rem;
+        text-align: center;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
 
         .youtube {
-            color: red;
+            color: var(--youtube-color);
+            font-weight: 900;
+            position: relative;
+            
+            &::after {
+                content: '';
+                position: absolute;
+                bottom: -5px;
+                left: 0;
+                width: 100%;
+                height: 3px;
+                background-color: var(--youtube-color);
+                border-radius: 3px;
+            }
         }
     }
 
     p {
-        font-size: 1rem;
-        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        color: var(--text-secondary);
+        text-align: center;
+        max-width: 700px;
     }
 
     .videoDetails {
@@ -73,8 +143,13 @@
         flex-direction: row;
         align-items: flex-start;
         justify-content: center;
-        margin-top: 1rem;
+        margin-top: 2rem;
         gap: 80px;
+        background-color: var(--background-secondary);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px var(--shadow-color);
+        transition: all 0.3s ease;
 
         .imgAndTitle {
             display: flex;
@@ -83,11 +158,52 @@
             justify-content: center;
         }
 
+        .mainOptionsContainer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
         .optionsContainer {
             width: 100%;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: flex-start;
+            
+            label {
+                margin-bottom: 0.5rem;
+                color: var(--text-primary);
+                font-weight: 600;
+                font-size: 0.9rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                
+                .optionIcon {
+                    width: 18px;
+                    height: 18px;
+                    color: var(--accent-color);
+                }
+            }
+            
+            .selectWrapper {
+                position: relative;
+                width: 100%;
+                
+                .selectIcon {
+                    position: absolute;
+                    right: 10px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 16px;
+                    height: 16px;
+                    color: var(--text-secondary);
+                    pointer-events: none;
+                }
+            }
         }
 
         img {
@@ -95,90 +211,341 @@
             height: auto;
             margin-bottom: 1rem;
             border-radius: 10px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            transition: transform 0.3s ease;
+            
+            &:hover {
+                transform: scale(1.02);
+            }
         }
 
         p {
-            font-size: 1rem;
-            font-weight: bold;
-            color: #404040;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 10px 0;
         }
 
         .downloadContainer {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            margin-top: 20px;
             
             .fileSize {
-                font-size: 12px;
-                margin: 0px !important;
-                color: #858585;
+                font-size: 0.9rem;
+                margin: 0px 0 10px 0 !important;
+                color: var(--text-secondary);
+                font-weight: normal;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                
+                .infoIcon {
+                    width: 16px;
+                    height: 16px;
+                    color: var(--text-secondary);
+                }
             }
 
             .downloadButton {
-                padding: 20px 40px;
-                background-color: #EC2422;
+                padding: 15px 30px;
+                background-color: var(--accent-color);
                 color: white;
                 border: none;
                 cursor: pointer;
-                border-radius: 4px;
+                border-radius: 8px;
                 margin-top: 5px;
-    
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transition: all 0.3s ease;
+                
+                .buttonIcon {
+                    width: 20px;
+                    height: 20px;
+                    transition: transform 0.3s ease;
+                }
+
                 &:hover {
-                    background-color: #333;
+                    background-color: var(--button-hover);
+                    transform: translateY(-2px);
+                }
+                
+                &:hover .buttonIcon {
+                    transform: translateY(2px);
+                }
+                
+                &:active {
+                    transform: translateY(0);
                 }
             }
         }
 
-
         div {
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 1rem;
-
-            label {
-                margin-bottom: 0.5rem;
-            }
 
             select {
                 padding: 15px 10px;
-                width: 158px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                background-color: #fff;
+                width: 100%;
+                min-width: 158px;
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                background-color: var(--input-background);
                 font-size: 16px;
-                color: #333;
+                color: var(--text-primary);
                 appearance: none;
                 -webkit-appearance: none;
                 -moz-appearance: none;
                 cursor: pointer;
-                background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path fill="none" stroke="%23333" stroke-width="2" d="M5.5 7.5L10 12l4.5-4.5"/></svg>');
-                background-repeat: no-repeat;
-                background-position: right 10px center;
-                background-size: 16px 12px;
+                background-image: none;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 6px var(--shadow-color);
+                padding-right: 30px;
+                
+                &:focus {
+                    outline: none;
+                    border-color: var(--accent-color);
+                }
             }
+        }
+    }
+    
+    // Estilo para el toggle del tema
+    .themeToggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: auto;
+        height: auto;
+        border-radius: 30px;
+        background: none;
+        box-shadow: none;
+        cursor: pointer;
+        border: none;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        padding: 0;
+        
+        .toggleTrack {
+            position: relative;
+            width: 72px;
+            height: 36px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 6px;
+            transition: all 0.4s ease;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            overflow: hidden;
+            
+            &.lightActive {
+                background-color: var(--youtube-color); // Naranja para modo claro como en la imagen
+            }
+            
+            &.darkActive {
+                background-color: #232339; // Azul oscuro/negro para modo oscuro como en la imagen
+            }
+        }
+        
+        .toggleIcon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            transition: all 0.3s ease;
+            
+            &:first-child {
+                opacity: 0.95;
+                transform: scale(0.95);
+                margin-left: 2px;
+            }
+            
+            &:last-child {
+                opacity: 0.95;
+                transform: scale(0.95);
+                margin-right: 2px;
+            }
+        }
+        
+        .sunIcon {
+            width: 18px;
+            height: 18px;
+            color: #ffffff;
+        }
+        
+        .moonIcon {
+            width: 16px;
+            height: 16px;
+            color: #ffffff;
+            transform: rotate(-25deg);
+        }
+        
+        .toggleThumb {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+            left: 4px;
+            top: 4px;
+        }
+        
+        .thumbLeft {
+            transform: translateX(0);
+        }
+        
+        .thumbRight {
+            transform: translateX(36px);
+        }
+        
+        &:hover {
+            .toggleTrack {
+                box-shadow: 0 4px 12px var(--shadow-color);
+            }
+            
+            .toggleThumb {
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            }
+        }
+        
+        &:active {
+            .toggleThumb {
+                width: 32px;
+                transition: width 0.1s, transform 0.4s;
+            }
+        }
+    }
+    
+    // Estilo para el mensaje de progreso
+    .progressContainer {
+        width: 100%;
+        margin-top: 20px;
+        padding: 20px;
+        background-color: var(--background-secondary);
+        border-radius: 8px;
+        box-shadow: 0 2px 6px var(--shadow-color);
+        
+        p {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            
+            .progressIcon {
+                width: 20px;
+                height: 20px;
+                color: var(--accent-color);
+                animation: pulse 1.5s infinite;
+            }
+        }
+        
+        progress {
+            width: 100%;
+            height: 10px;
+        }
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
         }
     }
 }
 
 @media (max-width: 768px) {
     .container {
+        padding: 1rem;
+        
+        .searchContainer {
+            flex-direction: column;
+            width: 100%;
+            
+            .inputContainer {
+                width: 100%;
+            }
+            
+            button {
+                width: 100%;
+                padding: 15px;
+            }
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+        }
+        
+        .themeToggle {
+            top: 10px;
+            right: 10px;
+            
+            .toggleTrack {
+                width: 60px;
+                height: 32px;
+            }
+            
+            .toggleThumb {
+                width: 24px;
+                height: 24px;
+            }
+            
+            .thumbRight {
+                transform: translateX(32px);
+            }
+            
+            .toggleIcon {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .sunIcon, .moonIcon {
+                width: 14px;
+                height: 14px;
+            }
+        }
+        
         .videoDetails {
             flex-direction: column;
             align-items: center;
             gap: 20px;
+            padding: 15px;
     
             img {
-                max-width: 350px;
+                max-width: 100%;
+                width: 100%;
             }
 
             div {
                 select {
-                    padding: 15px 10px;
                     width: 100%;
                 }
             }
-    
         }
 
         .mainOptionsContainer {
@@ -186,32 +553,13 @@
         }
 
         .downloadContainer {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            width: 100%;
+            align-items: stretch;
             
-            .fileSize {
-                font-size: 12px;
-                margin: 0px !important;
-                color: #858585;
-            }
-
             .downloadButton {
-                padding: 20px 40px;
-                background-color: #EC2422;
-                color: white;
-                border: none;
-                cursor: pointer;
-                border-radius: 4px;
-                margin-top: 5px;
-    
-                &:hover {
-                    background-color: #333;
-                }
+                width: 100%;
+                justify-content: center;
             }
         }
-
-        
     }
-
 }
