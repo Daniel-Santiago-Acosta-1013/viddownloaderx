@@ -1,9 +1,17 @@
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import Head from 'next/head';
-import Swal from 'sweetalert2';
 import styles from '../../styles/Home.module.scss';
 import { useTheme } from '../context/ThemeContext';
 import Icon from '../components/Icon';
+import Modal from '../components/Modal/Modal';
+
+// Define ModalState interface
+interface ModalState {
+  isOpen: boolean;
+  title?: string;
+  content?: ReactNode;
+  type?: 'success' | 'error' | 'loading' | 'info';
+}
 
 const Home = () => {
     const [url, setUrl] = useState('');
@@ -14,74 +22,51 @@ const Home = () => {
     const [videoInfo, setVideoInfo] = useState<any>(null);
     const { theme, toggleTheme } = useTheme();
 
+    const [modalState, setModalState] = useState<ModalState>({ isOpen: false });
+
+    const showModal = (title: string, content: ReactNode, type: ModalState['type']) => {
+      setModalState({ isOpen: true, title, content, type });
+    };
+
+    const hideModal = () => {
+      setModalState({ isOpen: false, title: '', content: '', type: undefined });
+    };
+
     const handleSearch = async () => {
         if (!url) {
-            return Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please enter a YouTube URL',
-                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
-                color: theme === 'dark' ? '#e0e0e0' : '#333333',
-            });
+            showModal('Error', 'Por favor, ingrese una URL de YouTube.', 'error');
+            return;
         }
 
-        try {
-            // Mostrar loading
-            Swal.fire({
-                title: 'Buscando información...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                },
-                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
-                color: theme === 'dark' ? '#e0e0e0' : '#333333',
-            });
+        showModal('Buscando Información...', 'Por favor espere, estamos obteniendo los detalles del video.', 'loading');
 
-            // Fetch video info from API
+        try {
             const response = await fetch(`/api/videoInfo?url=${encodeURIComponent(url)}`);
             const data = await response.json();
             
-            // Cerrar el loading
-            Swal.close();
+            hideModal(); // Hide loading modal
 
             if (data.error) {
-                return Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.error,
-                    background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
-                    color: theme === 'dark' ? '#e0e0e0' : '#333333',
-                });
+                showModal('Error', data.error, 'error');
+                return;
             }
             setVideoInfo(data);
         } catch (error) {
-            Swal.close();
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Hubo un problema al buscar el video. Intenta de nuevo.',
-                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
-                color: theme === 'dark' ? '#e0e0e0' : '#333333',
-            });
+            hideModal(); // Hide loading modal
+            showModal('Error', 'Hubo un problema al buscar el video. Intente de nuevo.', 'error');
         }
     };
 
     const handleDownload = async () => {
-        if (!url) {
-            return Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please enter a YouTube URL',
-                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
-                color: theme === 'dark' ? '#e0e0e0' : '#333333',
-            });
+        if (!url || !videoInfo) { // also check for videoInfo
+            showModal('Error', 'Por favor, primero busque un video e ingrese una URL de YouTube.', 'error');
+            return;
         }
 
         setIsDownloading(true);
         setProgress(0);
 
         try {
-            // Obtener el formatId correspondiente a la calidad seleccionada
             let selectedFormatId = null;
             if (videoInfo?.formats) {
                 if (format === 'audio' && videoInfo.formats.audio) {
@@ -93,15 +78,13 @@ const Home = () => {
                 }
             }
 
-            // Construir URL con parámetros para la descarga
-            let downloadUrl = `/api/download?url=${encodeURIComponent(url)}&quality=${quality}&format=${format}`;
+            let downloadUrlPath = `/api/download?url=${encodeURIComponent(url)}&quality=${quality}&format=${format}`;
             
-            // Añadir el formatId si está disponible (mejora la precisión de la descarga)
             if (selectedFormatId) {
-                downloadUrl += `&formatId=${selectedFormatId}`;
+                downloadUrlPath += `&formatId=${selectedFormatId}`;
             }
 
-            const response = await fetch(downloadUrl, {
+            const response = await fetch(downloadUrlPath, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -111,13 +94,8 @@ const Home = () => {
             if (!response.ok) {
                 setIsDownloading(false);
                 const errorData = await response.json();
-                return Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: errorData.error || 'Failed to download video',
-                    background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
-                    color: theme === 'dark' ? '#e0e0e0' : '#333333',
-                });
+                showModal('Error de Descarga', errorData.error || 'No se pudo descargar el video. Intente de nuevo.', 'error');
+                return;
             }
 
             const filename = response.headers.get('X-Filename') || (format === 'audio' ? 'audio.mp3' : 'video.mp4');
@@ -143,32 +121,22 @@ const Home = () => {
             link.setAttribute('download', filename);
             document.body.appendChild(link);
             link.click();
-            link.parentNode.removeChild(link);
+            link.parentNode?.removeChild(link);
 
-            // Mostrar mensaje de éxito
-            Swal.fire({
-                icon: 'success',
-                title: '¡Descarga Completada!',
-                text: `${filename} se ha descargado con éxito`,
-                timer: 3000,
-                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
-                color: theme === 'dark' ? '#e0e0e0' : '#333333',
-            });
+            showModal('¡Descarga Completada!', `${filename} se ha descargado con éxito.`, 'success');
+            setTimeout(() => {
+                hideModal();
+            }, 3000);
+
 
             setIsDownloading(false);
         } catch (error) {
             setIsDownloading(false);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Hubo un problema al descargar el video. Intenta de nuevo.',
-                background: theme === 'dark' ? '#1e1e1e' : '#ffffff',
-                color: theme === 'dark' ? '#e0e0e0' : '#333333',
-            });
+            showModal('Error de Descarga', 'Hubo un problema al descargar el video. Intente de nuevo.', 'error');
         }
     };
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             handleSearch();
         }
@@ -211,15 +179,20 @@ const Home = () => {
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                         onKeyDown={handleKeyDown}
+                        disabled={modalState.isOpen && modalState.type === 'loading'}
                     />
                 </div>
-                <button onClick={handleSearch} className={styles.searchButton}>
+                <button 
+                    onClick={handleSearch} 
+                    className={styles.searchButton}
+                    disabled={modalState.isOpen && modalState.type === 'loading'}
+                >
                     <span>Buscar</span>
                     <Icon name="MagnifyingGlassIcon" solid className={styles.buttonIcon} />
                 </button>
             </div>
 
-            {videoInfo && (
+            {videoInfo && !modalState.isOpen && (
                 <div className={styles.videoDetails}>
                     <div className={styles.imgAndTitle}>
                         <img src={videoInfo.thumbnail} alt={videoInfo.title} />
@@ -232,7 +205,7 @@ const Home = () => {
                                 Resolución
                             </label>
                             <div className={styles.selectWrapper}>
-                                <select value={quality} onChange={(e) => setQuality(e.target.value)}>
+                                <select value={quality} onChange={(e) => setQuality(e.target.value)} disabled={isDownloading}>
                                     <option value="highest">Máxima</option>
                                     <option value="1080p">1080p</option>
                                     <option value="720p">720p</option>
@@ -248,7 +221,7 @@ const Home = () => {
                                 Formato
                             </label>
                             <div className={styles.selectWrapper}>
-                                <select value={format} onChange={(e) => setFormat(e.target.value)}>
+                                <select value={format} onChange={(e) => setFormat(e.target.value)} disabled={isDownloading}>
                                     <option value="video">Video</option>
                                     <option value="audio">Audio (MP3)</option>
                                 </select>
@@ -257,10 +230,12 @@ const Home = () => {
                         </div>
 
                         <div className={styles.downloadContainer}>
-                            <p className={styles.fileSize}>
-                                <Icon name="DocumentIcon" className={styles.infoIcon} />
-                                Tamaño estimado: {videoInfo.fileSize}
-                            </p>
+                            {videoInfo.fileSize && // Check if fileSize exists
+                                <p className={styles.fileSize}>
+                                    <Icon name="DocumentIcon" className={styles.infoIcon} />
+                                    Tamaño estimado: {videoInfo.fileSize}
+                                </p>
+                            }
                             <button 
                                 onClick={handleDownload} 
                                 disabled={isDownloading} 
@@ -283,6 +258,15 @@ const Home = () => {
                     <progress value={progress} max="100" />
                 </div>
             )}
+
+            <Modal
+                isOpen={modalState.isOpen}
+                onClose={hideModal}
+                title={modalState.title}
+                type={modalState.type}
+            >
+                {modalState.content}
+            </Modal>
         </div>
     );
 };

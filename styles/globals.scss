@@ -29,6 +29,18 @@
     --shadow-color: rgba(0, 0, 0, 0.1);
     --overlay-color: rgba(255, 255, 255, 0.9);
     --font-primary: 'Inter', 'DMSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
+    /* Modal specific variables - Light Theme */
+    --modal-background: #ffffff;
+    --modal-text-primary: #333333;
+    --modal-border-color: #e0e0e0;
+    --modal-overlay-background: rgba(0, 0, 0, 0.6);
+    --modal-header-background: #f0f0f0;
+    --modal-success-color: #4CAF50;
+    --modal-error-color: #F44336;
+    --modal-info-color: #2196F3;
+    --modal-loading-color: #FF9800;
+    --button-close-hover-background: #e0e0e0;
 }
 
 /* Tema oscuro */
@@ -46,6 +58,19 @@ body[data-theme='dark'] {
     --youtube-color: #ff4545;
     --shadow-color: rgba(0, 0, 0, 0.4);
     --overlay-color: rgba(0, 0, 0, 0.8);
+
+    /* Modal specific variables - Dark Theme */
+    --modal-background: #2c2c2c;
+    --modal-text-primary: #e0e0e0;
+    --modal-border-color: #444444;
+    --modal-overlay-background: rgba(0, 0, 0, 0.7);
+    --modal-header-background: #383838;
+    --button-close-hover-background: #555555;
+    /* Success, error, info, loading colors can also be themed if desired, 
+       but often they are kept consistent for universal recognition. 
+       If you want to theme them, add them here like so for example:
+       --modal-success-color: #66bb6a; 
+    */
 }
 
 body {
