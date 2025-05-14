@@ -15,96 +15,91 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             dumpSingleJson: true,
             noCheckCertificates: true,
             noWarnings: true,
-            preferFreeFormats: true,
             addHeader: ['referer:youtube.com', 'user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36']
         });
 
         const { stdout } = await videoInfoProcess;
         const videoInfo = JSON.parse(stdout);
-        const title = videoInfo.title.replace(/[^\w\s]/gi, '').substring(0, 200); // Sanitizar título
+        const title = videoInfo.title.replace(/[\W_]+/g, " ").trim().substring(0, 150) || 'video'; // Improved sanitization
 
-        let downloadOptions: any = {
-            output: '-',
+        let downloadCommandOptions: any = {
+            output: '-', // Stream to stdout
             addHeader: ['referer:youtube.com', 'user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'],
         };
 
-        // Si se proporciona formatId específico, usarlo
+        let finalFilename = `${title}.mp4`;
+        let finalContentType = 'video/mp4';
+
         if (formatId && typeof formatId === 'string') {
-            downloadOptions.formatId = formatId;
-        }
-        // Si no, usar las opciones de calidad/formato
-        else {
+            // User has selected a specific format ID
             if (format === 'audio') {
-                downloadOptions.extractAudio = true;
-                downloadOptions.audioFormat = 'mp3';
-                downloadOptions.audioQuality = 0; // mejor calidad
+                downloadCommandOptions.format = formatId; // Use the audio formatId directly
+                finalFilename = `${title}.mp3`;
+                finalContentType = 'audio/mp3';
             } else {
-                // Determinar la calidad de video
-                if (quality === 'highest') {
-                    downloadOptions.formatSortingVp9Avc = '+bestvideo,+bestaudio/best';
-                } else if (quality === '1080p') {
-                    downloadOptions.formatSort = 'res:1080';
-                } else if (quality === '720p') {
-                    downloadOptions.formatSort = 'res:720';
-                } else if (quality === '480p') {
-                    downloadOptions.formatSort = 'res:480';
-                } else if (quality === '360p') {
-                    downloadOptions.formatSort = 'res:360';
+                // For video, the formatId might be for a video-only stream.
+                // Combine with bestaudio. If formatId itself is already a merged format, this is usually harmless.
+                // For 'highest' quality special case, ensure it picks best video and audio
+                if (quality === 'highest' && formatId === videoInfo.formats?.find((f:any) => f.format_note ==='highest' || f.height === videoInfo.height )?.format_id ) {
+                    // if formatId for highest indeed points to a pre-merged or best video stream
+                     downloadCommandOptions.format = `${formatId}+bestaudio/bestvideo+bestaudio/best`;
+                } else {
+                     downloadCommandOptions.format = `${formatId}+bestaudio/best`; // Combine selected video ID with best audio
+                }
+                // If the selected formatId (from videoInfo.ts) has extension info, use it
+                const selectedFormatDetail = videoInfo.formats?.find((f:any) => f.format_id === formatId);
+                if (selectedFormatDetail?.ext && selectedFormatDetail.ext !== 'unknown_video') {
+                    finalFilename = `${title}.${selectedFormatDetail.ext}`;
+                    finalContentType = selectedFormatDetail.ext === 'webm' ? 'video/webm' : `video/${selectedFormatDetail.ext}`;
                 }
             }
+        } else {
+            // Legacy fallback if no formatId (should be less common with new UI)
+            if (format === 'audio') {
+                downloadCommandOptions.extractAudio = true;
+                downloadCommandOptions.audioFormat = 'mp3';
+                downloadCommandOptions.audioQuality = 0; // Best quality audio
+                finalFilename = `${title}.mp3`;
+                finalContentType = 'audio/mp3';
+            } else {
+                // Default to best mp4 if no specific quality/formatId
+                downloadCommandOptions.format = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best';
+            }
         }
-
-        // Determinar el nombre del archivo y tipo de contenido
-        const filename = format === 'audio'
-            ? `${title}.mp3`
-            : `${title}.mp4`;
         
-        const contentType = format === 'audio' ? 'audio/mp3' : 'video/mp4';
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(finalFilename)}"`);
+        res.setHeader('Content-Type', finalContentType);
+        res.setHeader('X-Filename', finalFilename); // Send clean filename for client-side use
         
-        // Configurar headers de respuesta
-        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('X-Filename', filename);
-        
-        // Ejecutar la descarga
-        const downloadProcess = exec(url, downloadOptions);
-        
-        // Configurar manejo de progreso y streaming
-        let totalSize = 0;
-        let downloadedSize = 0;
+        const downloadProcess = exec(url, downloadCommandOptions);
         
         if (downloadProcess.stdout) {
-            // Crear un transform stream para el progreso
-            const progressStream = new Transform({
-                transform(chunk, encoding, callback) {
-                    downloadedSize += chunk.length;
-                    // Opcional: Calcular progreso si conocemos el tamaño total
-                    if (totalSize > 0) {
-                        const progress = Math.floor((downloadedSize / totalSize) * 100);
-                    }
-                    callback(null, chunk);
-                }
-            });
-
-            // Configurar el pipeline
-            downloadProcess.stdout.pipe(progressStream).pipe(res);
-            
-            // Manejar errores
+            downloadProcess.stdout.pipe(res);
             downloadProcess.on('error', (error) => {
                 console.error('Download process error:', error);
                 if (!res.writableEnded) {
-                    res.status(500).end(`Download failed: ${error.message}`);
+                    res.status(500).end(JSON.stringify({ error: `Download failed: ${error.message}` }));
                 }
             });
+            downloadProcess.on('close', (code) => {
+                if (code !== 0 && !res.writableEnded) {
+                    console.error(`Download process exited with code ${code}`);
+                } 
+                res.end();
+            });
         } else {
-            throw new Error('Failed to start download process');
+            throw new Error('Failed to start download process, stdout is not available.');
         }
+
     } catch (error: any) {
-        console.error('Download error:', error);
-        
-        // Si ya habíamos empezado a escribir la respuesta, no podemos enviar un error HTTP
-        if (!res.writableEnded) {
+        console.error('Download error in API handler:', error.message);
+        if (!res.headersSent && !res.writableEnded) {
             res.status(500).json({ error: `Download failed: ${error.message}` });
+        } else if (!res.writableEnded) {
+            // If headers were sent but we haven't finished, try to end with an error indication if possible
+            // This is tricky because the stream might be ongoing.
+            console.error('Error after headers sent, attempting to end response.');
+            res.end(); 
         }
     }
 }
